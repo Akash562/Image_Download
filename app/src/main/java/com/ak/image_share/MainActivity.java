@@ -5,9 +5,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -29,7 +31,7 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 public class MainActivity extends AppCompatActivity {
 
-    ImageView img1,img2,img3,img4;
+    ImageView img1,img2;
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
     @Override
@@ -43,43 +45,24 @@ public class MainActivity extends AppCompatActivity {
 
         img1=findViewById(R.id.img1);
         img2=findViewById(R.id.img2);
-        img3=findViewById(R.id.img3);
-        img4=findViewById(R.id.img4);
-
 
         Glide.with(this).load("https://homepages.cae.wisc.edu/~ece533/images/mountain.png").into(img1);
         Glide.with(this).load("https://homepages.cae.wisc.edu/~ece533/images/boat.png").into(img2);
-        Glide.with(this).load("https://homepages.cae.wisc.edu/~ece533/images/frymire.png").into(img3);
-        Glide.with(this).load("https://homepages.cae.wisc.edu/~ece533/images/peppers.png").into(img4);
-
 
         img1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveImage(img1);
+                shareImage(img1);
             }
         });
 
         img2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveImage(img2);
+                shareImage(img2);
             }
         });
 
-        img3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveImage(img3);
-            }
-        });
-
-        img4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveImage(img4);
-            }
-        });
     }
 
     private  boolean checkAndRequestPermissions() {
@@ -112,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
 
         boolean success = false;
 
-        // Encode the file as a PNG image.
         FileOutputStream outStream=null;
         try {
             outStream = new FileOutputStream(sdCardDirectory+"/"+ImageViewName.getId()+".png");
@@ -130,6 +112,22 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),
                     "Error during image saving", Toast.LENGTH_LONG).show();
         }
+
+    }
+
+    public void shareImage(ImageView imageview){
+
+        saveImage(imageview);
+
+        Uri imgUri = Uri.parse(Environment.getExternalStorageDirectory().getPath()+"/MYAPP/"+imageview.getId()+".png");
+        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+        whatsappIntent.setType("text/plain");
+        whatsappIntent.setPackage("com.whatsapp");
+        whatsappIntent.putExtra(Intent.EXTRA_TEXT, "The text you wanted to share");
+        whatsappIntent.putExtra(Intent.EXTRA_STREAM, imgUri);
+        whatsappIntent.setType("image/jpeg");
+        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(whatsappIntent);
 
     }
 

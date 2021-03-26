@@ -52,14 +52,14 @@ public class MainActivity extends AppCompatActivity {
         img1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shareImage(img1);
+                saveImage(img1);
             }
         });
 
         img2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shareImage(img2);
+                saveImage(img2);
             }
         });
 
@@ -107,28 +107,41 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (success) {
-            Toast.makeText(getApplicationContext(), "Image saved with success",Toast.LENGTH_LONG).show();
+            //  Toast.makeText(getApplicationContext(), "Image saved with success",Toast.LENGTH_LONG).show();
+            Log.d("Tag","Image Save Success");
+
+            Uri imgUri = Uri.parse(Environment.getExternalStorageDirectory().getPath()+"/MYAPP/"+ImageViewName.getId()+".png");
+            Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+            whatsappIntent.setType("text/plain");
+            whatsappIntent.setPackage("com.whatsapp");
+            whatsappIntent.putExtra(Intent.EXTRA_TEXT, "My Image4You");
+            whatsappIntent.putExtra(Intent.EXTRA_STREAM, imgUri);
+            whatsappIntent.setType("image/jpeg");
+            whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            // Use package name which we want to check
+            boolean isAppInstalled = appInstalledOrNot("com.whatsapp");
+
+            if(isAppInstalled){
+                startActivity(whatsappIntent);
+            }else{
+                Toast.makeText(this, "Install Whatsapp First", Toast.LENGTH_SHORT).show();
+            }
+
         } else {
-            Toast.makeText(getApplicationContext(),
-                    "Error during image saving", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),"Error During Image Saving", Toast.LENGTH_LONG).show();
         }
 
     }
 
-    public void shareImage(ImageView imageview){
-
-        saveImage(imageview);
-
-        Uri imgUri = Uri.parse(Environment.getExternalStorageDirectory().getPath()+"/MYAPP/"+imageview.getId()+".png");
-        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
-        whatsappIntent.setType("text/plain");
-        whatsappIntent.setPackage("com.whatsapp");
-        whatsappIntent.putExtra(Intent.EXTRA_TEXT, "The text you wanted to share");
-        whatsappIntent.putExtra(Intent.EXTRA_STREAM, imgUri);
-        whatsappIntent.setType("image/jpeg");
-        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(whatsappIntent);
-
+    private boolean appInstalledOrNot(String uri) {
+        PackageManager pm = getPackageManager();
+        try {
+            pm.getPackageInfo(uri, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        return false;
     }
 
 }
